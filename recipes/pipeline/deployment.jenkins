@@ -1,0 +1,32 @@
+# Define pipeline stages
+pipeline {
+    agent any
+    
+    stages {
+        stage('Deploy Secrets') {
+            steps {
+                script {
+                    sh "kubectl apply -f kubernetes/manifests/secrets.yaml -n spring"
+                }
+            }
+        }
+        
+        stage('Deploy MySQL') {
+            steps {
+                script {
+                    sh "kubectl apply -f kubernetes/manifests/mysql-deployment.yaml -n spring"
+                    sh "kubectl apply -f kubernetes/manifests/mysql-service.yaml -n spring"
+                }
+            }
+        }
+        
+        stage('Deploy Spring Boot') {
+            steps {
+                script {
+                    sh "kubectl apply -f kubernetes/manifests/spring-boot-deployment.yaml -n spring"
+                    sh "kubectl apply -f kubernetes/manifests/spring-boot-service.yaml -n spring"
+                }
+            }
+        }
+    }
+}
