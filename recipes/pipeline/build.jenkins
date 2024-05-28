@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    git branch: 'main',
+                        credentialsId: 'rajath-my-git-pat',
+                        url: 'https://github.com/rajath-optit/optit-lab-springmvc-example.git'
+                }
+            }
+        }
+        
+        stage('Maven Build') {
+            steps {
+                script {
+                    sh "cd recipes && mvn clean install"
+                }
+            }
+        }
+        
+        stage('Run') {
+            steps {
+                sh "cd recipes && mvn spring-boot:run"
+            }
+        }
+        
+        stage('Verify Dockerfile') {
+            steps {
+                script {
+                    // Print working directory and list files to verify Dockerfile presence
+                    sh 'pwd && ls -la'
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build Docker image using Dockerfile in the root of the recipes directory
+                    sh "docker build -t your-spring-boot-app -f recipes/Dockerfile recipes"
+                }
+            }
+        }
+        
+        stage('Tag Docker Image') {
+            steps {
+                script {
+                    sh "docker tag your-spring-boot-app raorajath/your-spring-boot-app:compose1"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
