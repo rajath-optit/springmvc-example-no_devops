@@ -1,6 +1,5 @@
 pipeline {
     agent any
-    
     stages {
         stage('Checkout') {
             steps {
@@ -11,7 +10,6 @@ pipeline {
                 }
             }
         }
-        
         stage('Maven Build') {
             steps {
                 script {
@@ -19,13 +17,11 @@ pipeline {
                 }
             }
         }
-        
         stage('Run') {
             steps {
                 sh "cd recipes && mvn spring-boot:run"
             }
         }
-        
         stage('Verify Dockerfile') {
             steps {
                 script {
@@ -34,7 +30,6 @@ pipeline {
                 }
             }
         }
-        
         stage('Build Docker Image') {
             steps {
                 script {
@@ -43,7 +38,6 @@ pipeline {
                 }
             }
         }
-        
         stage('Tag Docker Image') {
             steps {
                 script {
@@ -52,7 +46,7 @@ pipeline {
             }
         }
     }
-
+ 
     post {
         success {
             echo 'Pipeline executed successfully!'
