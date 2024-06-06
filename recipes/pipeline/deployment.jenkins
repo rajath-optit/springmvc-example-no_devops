@@ -1,30 +1,32 @@
-# Define pipeline stages
 pipeline {
     agent any
-    
+
     stages {
-        stage('Deploy Secrets') {
+        stage('Checkout') {
             steps {
                 script {
-                    sh "kubectl apply -f kubernetes/manifests/secrets.yaml -n spring"
+                    git branch: 'main',
+                        credentialsId: 'git-PAT',
+                        url: 'https://github.com/optit-cloud-team/optit-lab-springmvc-example.git'
                 }
             }
         }
-        
-        stage('Deploy MySQL') {
+
+        stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    sh "kubectl apply -f kubernetes/manifests/mysql-deployment.yaml -n spring"
-                    sh "kubectl apply -f kubernetes/manifests/mysql-service.yaml -n spring"
-                }
-            }
-        }
-        
-        stage('Deploy Spring Boot') {
-            steps {
-                script {
-                    sh "kubectl apply -f kubernetes/manifests/spring-boot-deployment.yaml -n spring"
-                    sh "kubectl apply -f kubernetes/manifests/spring-boot-service.yaml -n spring"
+                    withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
+                        // Deploy Secrets
+                        sh "kubectl apply -f kubernetes/manifests/secrets.yaml -n spring"
+                        
+                        // Deploy MySQL
+                        sh "kubectl apply -f kubernetes/manifests/mysql-deployment.yaml -n spring"
+                        sh "kubectl apply -f kubernetes/manifests/mysql-service.yaml -n spring"
+                        
+                        // Deploy Spring Boot
+                        sh "kubectl apply -f kubernetes/manifests/spring-boot-deployment.yaml -n spring"
+                        sh "kubectl apply -f kubernetes/manifests/spring-boot-service.yaml -n spring"
+                    }
                 }
             }
         }
