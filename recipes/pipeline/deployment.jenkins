@@ -16,17 +16,29 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
-                        // Deploy Secrets
-                        sh "kubectl apply -f kubernetes/manifests/secrets.yaml -n spring"
+                        // Deploy Namespace
+                        sh "kubectl apply -f kubernetes/manifests/namespace.yaml"
                         
                         // Deploy MySQL
-                        sh "kubectl apply -f kubernetes/manifests/mysql-deployment.yaml -n spring"
-                        sh "kubectl apply -f kubernetes/manifests/mysql-service.yaml -n spring"
+                        sh "kubectl apply -f kubernetes/manifests/mysql-pv.yaml"
+                        sh "kubectl apply -f kubernetes/manifests/mysql-pvc.yaml -n spring-example"
+                        sh "kubectl apply -f kubernetes/manifests/mysql-secret.yaml -n spring-example"
+                        sh "kubectl apply -f kubernetes/manifests/mysql-deployment.yaml -n spring-example"
+                        sh "kubectl apply -f kubernetes/manifests/mysql-service.yaml -n spring-example"
                         
                         // Deploy Spring Boot
-                        sh "kubectl apply -f kubernetes/manifests/spring-boot-deployment.yaml -n spring"
-                        sh "kubectl apply -f kubernetes/manifests/spring-boot-service.yaml -n spring"
+                        sh "kubectl apply -f kubernetes/manifests/springboot-configmap.yaml -n spring-example"
+                        sh "kubectl apply -f kubernetes/manifests/springboot-deployment.yaml -n spring-example"
+                        sh "kubectl apply -f kubernetes/manifests/springboot-service.yaml -n spring-example"
                     }
+                }
+            }
+        }
+
+        stage('Verify Kubernetes Deployment') {
+            steps {
+                script {
+                    sh "kubectl get all -n spring-example"
                 }
             }
         }
