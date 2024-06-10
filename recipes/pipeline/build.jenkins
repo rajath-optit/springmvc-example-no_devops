@@ -1,11 +1,11 @@
-pipeline {
-    agent any
-    stages {
-        stage('Checkout') {
-            steps {
-                script {
-                    git branch: 'main',
-                        credentialsId: 'git-PAT',
+pipeline { 
+    agent any 
+    stages { 
+        stage('Git Checkout') { 
+            steps { 
+                script { 
+                    git branch: branch_or_tag, 
+                        credentialsId: 'git-PAT', // Provide your credentials ID
                         url: 'https://github.com/optit-cloud-team/optit-lab-springmvc-example.git'
                 }
             }
